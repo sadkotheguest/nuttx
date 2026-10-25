@@ -101,7 +101,12 @@ ifeq ($(CONFIG_HPM_GPTMR_DRV),y)
 endif
 
 ifeq ($(CONFIG_HPM_PWM_DRV),y)
+# HPM6E00 has the PWMv2 IP, the older chips have the legacy PWM IP.
+ifeq ($(CONFIG_ARCH_CHIP_HPM6E00_SDK),y)
+  CHIP_CSRCS += hpmicro$(DELIM)hpm_sdk$(DELIM)drivers$(DELIM)src$(DELIM)hpm_pwmv2_drv.c
+else
   CHIP_CSRCS += hpmicro$(DELIM)hpm_sdk$(DELIM)drivers$(DELIM)src$(DELIM)hpm_pwm_drv.c
+endif
 endif
 
 ifeq ($(CONFIG_HPM_USB_DRV),y)

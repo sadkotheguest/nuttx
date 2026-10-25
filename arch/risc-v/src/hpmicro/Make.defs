@@ -71,7 +71,11 @@ CHIP_CSRCS += hpmicro$(DELIM)hpm_tim_lowerhalf.c
 endif
 
 ifeq ($(CONFIG_HPM_PWM_DRV),y)
+# The PWM lower half driver targets the legacy PWM IP; HPM6E00 uses PWMv2 and
+# the PX4 io_timer layer instead (a PWMv2 lower half is still to be written).
+ifneq ($(CONFIG_ARCH_CHIP_HPM6E00_SDK),y)
 CHIP_CSRCS += hpmicro$(DELIM)hpm_pwm_lowerhalf.c
+endif
 endif
 
 ifeq ($(CONFIG_HPM_CAN_DRV),y)
