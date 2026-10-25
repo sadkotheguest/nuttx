@@ -25,6 +25,12 @@ CFLAGS += -DHPM_SDK_L1C_NO_REENTRANT=1
 # the first object file, so it will appear at address 0
 CHIP_ASRCS += hpmicro$(DELIM)hpm_sdk$(DELIM)soc$(DELIM)$(HPM_CHIP_SERIES)$(DELIM)$(HPM_CHIP_SELECT)$(DELIM)toolchains$(DELIM)gcc$(DELIM)start.S
 
+# HPM6E00 start.S pulls in the SDK vector table (vectors.h), which references
+# irq_handler_trap(); that symbol lives in the SoC trap.c.
+ifeq ($(CONFIG_ARCH_CHIP_HPM6E00_SDK),y)
+CHIP_CSRCS += hpmicro$(DELIM)hpm_sdk$(DELIM)soc$(DELIM)$(HPM_CHIP_SERIES)$(DELIM)$(HPM_CHIP_SELECT)$(DELIM)toolchains$(DELIM)trap.c
+endif
+
 # Include arch files
 CHIP_CSRCS += hpmicro$(DELIM)hpm_sdk$(DELIM)arch$(DELIM)riscv$(DELIM)l1c$(DELIM)hpm_l1c_drv.c
 

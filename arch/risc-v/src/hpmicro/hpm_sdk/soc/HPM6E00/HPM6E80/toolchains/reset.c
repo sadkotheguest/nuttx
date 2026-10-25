@@ -109,6 +109,8 @@ __attribute__((weak)) int main(void)
     }
 }
 
+extern void __hpm_start(void);
+
 __attribute__((weak)) void reset_handler(void)
 {
     fencei();
@@ -116,8 +118,15 @@ __attribute__((weak)) void reset_handler(void)
     /* Call platform specific hardware initialization */
     system_init();
 
-    /* Entry function */
-    MAIN_ENTRY();
+    /* Entry function: hand over to NuttX (__hpm_start -> nx_start -> NSH).
+     *
+     * The bare-metal SDK variant calls MAIN_ENTRY(), i.e. the weak main()
+     * stub above, which just spins - the RTOS is never started and NSH never
+     * comes up.  The HPM6750/HPM6300 variants of this file call __hpm_start()
+     * instead; do the same here.
+     */
+
+    __hpm_start();
 }
 
 /*

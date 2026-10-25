@@ -59,6 +59,22 @@ void up_irqinitialize(void)
 
   up_irq_save();
 
+  /* Put the PLIC back into direct (non-vectored) mode.
+   *
+   * The HPM SDK's system_init() calls enable_plic_feature(), which writes
+   * PLIC.FEATURE = VECTORED | PREEMPT before NuttX starts.  NuttX runs the
+   * core in direct mode instead: start.S clears CSR_MMISC_CTL bit 1 and
+   * points mtvec at _vector_table, so machine external interrupts must
+   * arrive as MEIP and be claimed through PLIC.CLAIM.
+   *
+   * With the PLIC left in vectored mode the two sides disagree and no
+   * peripheral interrupt is ever delivered: PLIC.PENDING stays clear, MEIP
+   * never rises and PLIC.CLAIM reads as 0 (it is not valid in vectored
+   * mode).  Clearing the feature register makes PLIC and core consistent.
+   */
+
+  __plic_set_feature(HPM_PLIC_BASE, 0);
+
   /* Disable all global interrupts */
 
   for (id = 1; id <= HPM_NR_IRQS; id++)

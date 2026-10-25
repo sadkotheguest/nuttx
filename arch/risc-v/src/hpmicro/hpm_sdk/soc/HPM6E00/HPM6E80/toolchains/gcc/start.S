@@ -111,29 +111,23 @@ _start:
     #define HANDLER_S_TRAP irq_handler_s_trap
 #endif
 
-#if !defined(USE_NONVECTOR_MODE) || (USE_NONVECTOR_MODE == 0)
-    /* Initial machine trap-vector Base */
-    la t0, __vector_table
-    csrw mtvec, t0
+    /* Initial machine trap-vector Base.
+     *
+     * Use the NuttX trap entry: _vector_table points at exception_common(),
+     * which dispatches machine timer interrupts through irq_dispatch() and
+     * reaches riscv_mtimer_interrupt().  The SDK table (__vector_table) and
+     * irq_handler_trap() route the timer to the weak, empty mchtmr_isr(), so
+     * MTIP is never cleared and the CPU spins in the timer interrupt.
+     *
+     * Same as the HPM6750 variant of this file.
+     */
 
-#if defined (USE_S_MODE_IRQ)
-    la t0, __vector_s_table
-    csrw stvec, t0
-#endif
-    /* Enable vectored external PLIC interrupt */
-    csrsi CSR_MMISC_CTL, 2
-#else
-    /* Initial machine trap-vector Base */
-    la t0, HANDLER_TRAP
+    la t0, _vector_table
     csrw mtvec, t0
-#if defined (USE_S_MODE_IRQ)
-    la t0, HANDLER_S_TRAP
-    csrw stvec, t0
-#endif
 
     /* Disable vectored external PLIC interrupt */
+
     csrci CSR_MMISC_CTL, 2
-#endif
 
     /* System reset handler */
     call reset_handler

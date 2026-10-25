@@ -29,6 +29,10 @@ config ARCH_CHIP_HPM5361_SDK
 	bool "HPM5361"
 	select HPM_PLLCTLV2_DRV
 
+config ARCH_CHIP_HPM6E00_SDK
+	bool "HPM6E00"
+	select HPM_PLLCTLV2_DRV
+
 endchoice # HPMicro Chip Selection
 
 config HPM_ENABLE_FPU

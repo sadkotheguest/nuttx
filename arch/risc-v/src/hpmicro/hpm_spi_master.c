@@ -77,7 +77,7 @@
 #include "hpm_sysctl_drv.h"
 #if defined(CONFIG_ARCH_CHIP_HPM6750_SDK)
  #include "hpm_pllctl_drv.h"
-#elif defined(CONFIG_ARCH_CHIP_HPM6360_SDK)
+#elif defined(CONFIG_ARCH_CHIP_HPM6360_SDK) || defined(CONFIG_ARCH_CHIP_HPM6E00_SDK)
 #include "hpm_pllctlv2_drv.h"
 #endif
 
