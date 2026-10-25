@@ -51,6 +51,12 @@
  ****************************************************************************/
 
 #define  HPM_MAX_SPI_COUNT      4
+
+/* The NuttX SPI slave driver buffers a whole transfer in RAM.  On HPM6E00
+ * SPI_SOC_TRANSFER_COUNT_MAX is 4 GiB, which cannot be allocated, so a sane
+ * buffer size is used and transfers are limited to it.
+ */
+#define HPM_SPISLAVE_BUFFER_SIZE (256)
 #define WORDS2BYTES(_priv, _wn)   ((_wn) * ((_priv)->nbits / 8))
 #define BYTES2WORDS(_priv, _bn)   ((_bn) / ((_priv)->nbits / 8))
 
@@ -77,12 +83,12 @@ struct spislave_priv_s
   /* SPI Slave TX queue buffer */
 
   uint16_t tx_processing_lenth;
-  uint8_t tx_buffer[SPI_SOC_TRANSFER_COUNT_MAX];
+  uint8_t tx_buffer[HPM_SPISLAVE_BUFFER_SIZE];
   uint32_t rx_length;         /* Location of next RX value */
 
   /* SPI Slave RX queue buffer */
 
-  uint8_t rx_buffer[SPI_SOC_TRANSFER_COUNT_MAX];
+  uint8_t rx_buffer[HPM_SPISLAVE_BUFFER_SIZE];
 
   /* Flag that indicates whether SPI Slave is currently processing */
 
@@ -252,6 +258,14 @@ static hpm_stat_t spislave_tranfer_config(struct spislave_priv_s *priv, uint16_t
   hpm_stat_t stat;
   spi_control_config_t control_config = {0};
   spi_slave_get_default_control_config(&control_config);
+
+  /* A slave has no chip select output: keep CS_EN clear, otherwise the
+   * controller leaves the data line tri-stated and the host reads zeros
+   * (same as hpm_spi_slave_arm() in the standalone HPM6E00 driver).
+   */
+#if defined(HPM_IP_FEATURE_SPI_CS_SELECT) && (HPM_IP_FEATURE_SPI_CS_SELECT == 1)
+  control_config.common_config.cs_index = (spi_cs_index_t)0;
+#endif
   control_config.slave_config.slave_data_only = true;
   control_config.common_config.dummy_cnt = spi_dummy_count_1;
   control_config.common_config.trans_mode = spi_trans_write_read_together;
@@ -286,7 +300,7 @@ static int hpm_spi_slave_interrupt(int irq, void *context, void *arg)
   if (irq_status & spi_rx_fifo_threshold_int)
     {
       spi_read_data(priv->spibase, data_len_in_bytes, &ch, 1);
-      if ((priv->is_tx_enable == false) && spi_is_active(priv->spibase) && priv->is_processing)
+      if (spi_is_active(priv->spibase))
         {
           if (priv->rx_length < sizeof(priv->rx_buffer))
             {
@@ -508,7 +522,7 @@ static int spislave_enqueue(struct spi_slave_ctrlr_s *ctrlr,
 
   flags = enter_critical_section();
 
-  bufsize = SPI_SOC_TRANSFER_COUNT_MAX - priv->tx_length;
+  bufsize = HPM_SPISLAVE_BUFFER_SIZE - priv->tx_length;
 
   num_bytes = MIN(num_bytes, bufsize);
   if (num_bytes <= 0)
@@ -527,11 +541,74 @@ static int spislave_enqueue(struct spi_slave_ctrlr_s *ctrlr,
 
       priv->is_processing = true;
       priv->is_tx_enable  = true;
-      if (status_success != spislave_tranfer_config(priv, SPI_SOC_TRANSFER_COUNT_MAX))
+      if (status_success != spislave_tranfer_config(priv, (uint16_t)num_bytes))
         {
-          return -1;
           priv->is_processing = false;
+          leave_critical_section(flags);
+          return -1;
         }
+
+      /* spi_control_init() ends with a controller reset and clears TRANSFMT.
+       * Re-apply the slave format, otherwise the controller keeps answering in
+       * host mode and the master reads zeros - the same failure the standalone
+       * HPM6E00 driver works around in hpm_spi_slave_arm().
+       */
+      {
+        spi_format_config_t format_config;
+        spi_sclk_idle_state_t cpol;
+        spi_sclk_sampling_clk_edges_t cpha;
+
+        spi_slave_get_default_format_config(&format_config);
+        format_config.common_config.data_len_in_bits = priv->nbits;
+        format_config.common_config.mode = spi_slave_mode;
+
+        switch (priv->mode)
+          {
+          case SPISLAVE_MODE0:
+            cpol = spi_sclk_low_idle;
+            cpha = spi_sclk_sampling_odd_clk_edges;
+            break;
+          case SPISLAVE_MODE1:
+            cpol = spi_sclk_low_idle;
+            cpha = spi_sclk_sampling_even_clk_edges;
+            break;
+          case SPISLAVE_MODE2:
+            cpol = spi_sclk_high_idle;
+            cpha = spi_sclk_sampling_odd_clk_edges;
+            break;
+          default:
+          case SPISLAVE_MODE3:
+            cpol = spi_sclk_high_idle;
+            cpha = spi_sclk_sampling_even_clk_edges;
+            break;
+          }
+
+        format_config.common_config.cpol = cpol;
+        format_config.common_config.cpha = cpha;
+        spi_format_init(priv->spibase, &format_config);
+
+        /* The data only mode must survive the reset as well. */
+
+        if ((priv->spibase->TRANSCTRL & SPI_TRANSCTRL_SLVDATAONLY_MASK) == 0)
+          {
+            priv->spibase->TRANSCTRL |= SPI_TRANSCTRL_SLVDATAONLY_MASK;
+          }
+      }
+
+      /* Prime the TX FIFO now so that the first bytes are ready when the
+       * master starts clocking; the threshold interrupt replenishes it.
+       */
+      {
+        uint8_t data_len = spi_get_data_length_in_bytes(priv->spibase);
+
+        while ((priv->tx_processing_lenth < priv->tx_length) &&
+               (priv->tx_processing_lenth < SPI_SOC_FIFO_DEPTH))
+          {
+            spi_write_data(priv->spibase, data_len,
+                           &priv->tx_buffer[priv->tx_processing_lenth], 1);
+            priv->tx_processing_lenth++;
+          }
+      }
       priv->irqint = spi_tx_fifo_threshold_int | spi_rx_fifo_threshold_int | spi_end_int;
       spi_disable_interrupt(priv->spibase, priv->irqint);
       priv->irqint = spi_tx_fifo_threshold_int | spi_end_int;
@@ -576,7 +653,7 @@ static bool spislave_qfull(struct spi_slave_ctrlr_s *ctrlr)
   spiinfo("ctrlr=%p\n", ctrlr);
 
   flags = enter_critical_section();
-  is_full = (priv->tx_length == SPI_SOC_TRANSFER_COUNT_MAX);
+  is_full = (priv->tx_length == HPM_SPISLAVE_BUFFER_SIZE);
   leave_critical_section(flags);
 
   return is_full;
@@ -655,7 +732,7 @@ static size_t spislave_qpoll(struct spi_slave_ctrlr_s *ctrlr)
     {
       if ((!priv->is_processing) && (!priv->is_tx_enable))
         {
-          spislave_tranfer_config(priv, SPI_SOC_TRANSFER_COUNT_MAX);
+          spislave_tranfer_config(priv, HPM_SPISLAVE_BUFFER_SIZE);
           priv->irqint = spi_tx_fifo_threshold_int | spi_rx_fifo_threshold_int | spi_end_int;
           spi_disable_interrupt(priv->spibase, priv->irqint);
           priv->irqint = spi_rx_fifo_threshold_int | spi_end_int;
