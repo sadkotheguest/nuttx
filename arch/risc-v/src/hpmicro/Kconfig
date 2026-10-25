@@ -765,6 +765,18 @@ config HPM_SPI3_DMA_BUFFER
 	depends on HPM_SPI3_DMA
 
 #####################################################################
+#  SPI7 Configuration
+#####################################################################
+
+# HPM6E00 only: the HPM6E00EVK routes its SPI header to SPI7.
+# No DMA options yet - the driver is used in interrupt/polling mode.
+
+config HPM_SPI7
+	bool "SPI7"
+	default n
+	select HPM_SPI_DRV
+
+#####################################################################
 #  CAN0 Configuration
 #####################################################################
 

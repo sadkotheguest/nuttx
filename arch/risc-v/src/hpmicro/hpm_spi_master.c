@@ -643,6 +643,56 @@ static struct hpm_spidev_s g_spi3dev =
 
 #endif /* CONFIG_HPM_SPI3 */
 
+#ifdef CONFIG_HPM_SPI7
+
+/* HPM6E00: the HPM6E00EVK routes its SPI header to SPI7.
+ * No DMA support for this instance (DMAv2 is not handled by this driver).
+ */
+
+static const struct spi_ops_s g_sp7iops =
+{
+  .lock                    = spi_lock,
+  .select                  = hpm_spi7select,
+  .setfrequency            = spi_setfrequency,
+#ifdef CONFIG_SPI_DELAY_CONTROL
+  .setdelay                = spi_setdelay,
+#endif
+  .setmode                 = spi_setmode,
+  .setbits                 = spi_setbits,
+  .status                  = hpm_spi7status,
+#ifdef CONFIG_SPI_CMDDATA
+  .cmddata                 = hpm_spi7cmddata,
+#endif
+  .send                    = spi_send,
+#ifdef CONFIG_SPI_EXCHANGE
+  .exchange                = spi_exchange,
+#else
+  .sndblock                = spi_sndblock,
+  .recvblock               = spi_recvblock,
+#endif
+#ifdef CONFIG_SPI_TRIGGER
+  .trigger                 = spi_trigger,
+#endif
+  .registercallback        = 0,                   /* not implemented */
+};
+
+static struct hpm_spidev_s g_spi7dev =
+{
+  .spidev                  =
+  {
+    .ops                   = &g_sp7iops,
+  },
+  .spibase                 = HPM_SPI7,
+  .spiclock                = clock_spi7,
+  .spiirq                  = HPM_IRQn_SPI7,
+#ifdef CONFIG_PM
+  .pm_cb.prepare           = spi_pm_prepare,
+#endif
+  .config                  = FULL_DUPLEX,
+};
+
+#endif /* CONFIG_HPM_SPI7 */
+
 
 /****************************************************************************
  * Private Functions
@@ -1722,6 +1772,33 @@ struct spi_dev_s *hpm_spibus_initialize(int bus)
           priv->spi_context->cs_pin   = hpm_spibus_get_cs_pin(bus);
           priv->spi_context->write_cs = write_spi3_cs;
 #endif
+          spi_bus_initialize(priv);
+          priv->initialized = true;
+        }
+    }
+  else
+#endif
+#ifdef CONFIG_HPM_SPI7
+  if (bus == 7)
+    {
+      /* Select SPI7 */
+
+      priv = &g_spi7dev;
+
+      /* Only configure if the bus is not already configured */
+
+      if (!priv->initialized)
+        {
+          /* Configure SPI7 pins: SCK, MISO, and MOSI */
+
+          hpm_spibus_pins_init(bus);
+
+          /* Initialize the SPI semaphore that enforces mutually exclusive access. */
+
+          nxsem_init(&priv->exclsem, 0, 1);
+
+          /* Set up default configuration: Master, 8-bit, etc. */
+
           spi_bus_initialize(priv);
           priv->initialized = true;
         }

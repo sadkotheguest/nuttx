@@ -439,6 +439,7 @@
 #define HPM_IRQn_SPI1         (HPM_IRQ_PERI_START + IRQn_SPI1        )
 #define HPM_IRQn_SPI2         (HPM_IRQ_PERI_START + IRQn_SPI2        )
 #define HPM_IRQn_SPI3         (HPM_IRQ_PERI_START + IRQn_SPI3        )
+#define HPM_IRQn_SPI7         (HPM_IRQ_PERI_START + IRQn_SPI7        )
 #define HPM_IRQn_UART0        (HPM_IRQ_PERI_START + IRQn_UART0       )
 #define HPM_IRQn_UART1        (HPM_IRQ_PERI_START + IRQn_UART1       )
 #define HPM_IRQn_UART2        (HPM_IRQ_PERI_START + IRQn_UART2       )

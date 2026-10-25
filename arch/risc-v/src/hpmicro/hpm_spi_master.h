@@ -152,6 +152,13 @@ uint8_t hpm_spi3status(struct spi_dev_s *dev, uint32_t devid);
 int hpm_spi3cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd);
 #  endif
 
+#  ifdef CONFIG_HPM_SPI7
+void write_spi7_cs(uint32_t pin, uint8_t state);
+void hpm_spi7select(struct spi_dev_s *dev, uint32_t devid,
+                      bool selected);
+uint8_t hpm_spi7status(struct spi_dev_s *dev, uint32_t devid);
+#  endif
+
 #endif
 
 
