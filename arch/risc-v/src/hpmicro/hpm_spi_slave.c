@@ -255,22 +255,41 @@ static struct spislave_priv_s hpm_spi3slave_priv =
 
 static hpm_stat_t spislave_tranfer_config(struct spislave_priv_s *priv, uint16_t transfer_size)
 {
-  hpm_stat_t stat;
-  spi_control_config_t control_config = {0};
-  spi_slave_get_default_control_config(&control_config);
+  uint32_t retry = 1000U;
 
-  /* A slave has no chip select output: keep CS_EN clear, otherwise the
-   * controller leaves the data line tri-stated and the host reads zeros
-   * (same as hpm_spi_slave_arm() in the standalone HPM6E00 driver).
+  /* Program the slave frame directly.  spi_control_init() performs a full
+   * controller reset (SPIRST) which also clears TRANSFMT, so the format would
+   * have to be programmed again for every frame.  A slave frame only needs the
+   * data-only mode, full duplex and the transfer counts (programmed as
+   * count - 1).
    */
-#if defined(HPM_IP_FEATURE_SPI_CS_SELECT) && (HPM_IP_FEATURE_SPI_CS_SELECT == 1)
-  control_config.common_config.cs_index = (spi_cs_index_t)0;
+
+  priv->spibase->TRANSCTRL =
+      SPI_TRANSCTRL_SLVDATAONLY_SET(1) |
+      SPI_TRANSCTRL_TRANSMODE_SET(spi_trans_write_read_together) |
+      SPI_TRANSCTRL_WRTRANCNT_SET((uint32_t)transfer_size - 1U) |
+      SPI_TRANSCTRL_RDTRANCNT_SET((uint32_t)transfer_size - 1U);
+
+#if defined(HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT) && (HPM_IP_FEATURE_SPI_NEW_TRANS_COUNT == 1)
+  priv->spibase->WR_TRANS_CNT = (uint32_t)transfer_size - 1U;
+  priv->spibase->RD_TRANS_CNT = (uint32_t)transfer_size - 1U;
 #endif
-  control_config.slave_config.slave_data_only = true;
-  control_config.common_config.dummy_cnt = spi_dummy_count_1;
-  control_config.common_config.trans_mode = spi_trans_write_read_together;
-  stat = spi_control_init(priv->spibase, &control_config, transfer_size , transfer_size);
-  return stat;
+
+  /* Drop whatever is left over from the previous frame.  Only the FIFOs are
+   * reset here, the format and the timing registers are left untouched.
+   */
+
+  priv->spibase->CTRL |= SPI_CTRL_TXFIFORST_MASK | SPI_CTRL_RXFIFORST_MASK;
+
+  while ((priv->spibase->CTRL & (SPI_CTRL_TXFIFORST_MASK | SPI_CTRL_RXFIFORST_MASK)) != 0)
+    {
+      if (--retry == 0)
+        {
+          return status_fail;
+        }
+    }
+
+  return status_success;
 }
 
 
@@ -527,8 +546,8 @@ static int spislave_enqueue(struct spi_slave_ctrlr_s *ctrlr,
   num_bytes = MIN(num_bytes, bufsize);
   if (num_bytes <= 0)
     {
-      return 0;
       leave_critical_section(flags);
+      return 0;
     }
   memcpy(priv->tx_buffer + priv->tx_length, data, num_bytes);
   priv->tx_length += num_bytes;
@@ -541,6 +560,10 @@ static int spislave_enqueue(struct spi_slave_ctrlr_s *ctrlr,
 
       priv->is_processing = true;
       priv->is_tx_enable  = true;
+
+      /* A new frame starts from an empty receive buffer. */
+
+      priv->rx_length = 0;
       if (status_success != spislave_tranfer_config(priv, (uint16_t)num_bytes))
         {
           priv->is_processing = false;
@@ -548,52 +571,6 @@ static int spislave_enqueue(struct spi_slave_ctrlr_s *ctrlr,
           return -1;
         }
 
-      /* spi_control_init() ends with a controller reset and clears TRANSFMT.
-       * Re-apply the slave format, otherwise the controller keeps answering in
-       * host mode and the master reads zeros - the same failure the standalone
-       * HPM6E00 driver works around in hpm_spi_slave_arm().
-       */
-      {
-        spi_format_config_t format_config;
-        spi_sclk_idle_state_t cpol;
-        spi_sclk_sampling_clk_edges_t cpha;
-
-        spi_slave_get_default_format_config(&format_config);
-        format_config.common_config.data_len_in_bits = priv->nbits;
-        format_config.common_config.mode = spi_slave_mode;
-
-        switch (priv->mode)
-          {
-          case SPISLAVE_MODE0:
-            cpol = spi_sclk_low_idle;
-            cpha = spi_sclk_sampling_odd_clk_edges;
-            break;
-          case SPISLAVE_MODE1:
-            cpol = spi_sclk_low_idle;
-            cpha = spi_sclk_sampling_even_clk_edges;
-            break;
-          case SPISLAVE_MODE2:
-            cpol = spi_sclk_high_idle;
-            cpha = spi_sclk_sampling_odd_clk_edges;
-            break;
-          default:
-          case SPISLAVE_MODE3:
-            cpol = spi_sclk_high_idle;
-            cpha = spi_sclk_sampling_even_clk_edges;
-            break;
-          }
-
-        format_config.common_config.cpol = cpol;
-        format_config.common_config.cpha = cpha;
-        spi_format_init(priv->spibase, &format_config);
-
-        /* The data only mode must survive the reset as well. */
-
-        if ((priv->spibase->TRANSCTRL & SPI_TRANSCTRL_SLVDATAONLY_MASK) == 0)
-          {
-            priv->spibase->TRANSCTRL |= SPI_TRANSCTRL_SLVDATAONLY_MASK;
-          }
-      }
 
       /* Prime the TX FIFO now so that the first bytes are ready when the
        * master starts clocking; the threshold interrupt replenishes it.
@@ -611,7 +588,7 @@ static int spislave_enqueue(struct spi_slave_ctrlr_s *ctrlr,
       }
       priv->irqint = spi_tx_fifo_threshold_int | spi_rx_fifo_threshold_int | spi_end_int;
       spi_disable_interrupt(priv->spibase, priv->irqint);
-      priv->irqint = spi_tx_fifo_threshold_int | spi_end_int;
+      priv->irqint = spi_tx_fifo_threshold_int | spi_rx_fifo_threshold_int | spi_end_int;
       spi_enable_interrupt(priv->spibase, priv->irqint);
     }
 
