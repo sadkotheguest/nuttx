@@ -115,6 +115,8 @@
 #define HPM_IRQn_HALL2        (HPM_IRQ_PERI_START + IRQn_HALL2       )    /* HALL2 IRQ */
 #define HPM_IRQn_QEI2         (HPM_IRQ_PERI_START + IRQn_QEI2        )    /* QEI2 IRQ */
 #define HPM_IRQn_PWM3         (HPM_IRQ_PERI_START + IRQn_PWM3        )    /* PWM3 IRQ */
+#define HPM_IRQn_HDMA         (HPM_IRQ_PERI_START + IRQn_HDMA        )
+#define HPM_IRQn_XDMA         (HPM_IRQ_PERI_START + IRQn_XDMA        )
 #define HPM_IRQn_HALL3        (HPM_IRQ_PERI_START + IRQn_HALL3       )    /* HALL3 IRQ */
 #define HPM_IRQn_QEI3         (HPM_IRQ_PERI_START + IRQn_QEI3        )    /* QEI3 IRQ */
 #define HPM_IRQn_SDP          (HPM_IRQ_PERI_START + IRQn_SDP         )    /* SDP IRQ */
@@ -491,6 +493,8 @@
 #define HPM_IRQn_DEBUG_1      (HPM_IRQ_PERI_START + IRQn_DEBUG_1     )
 #define HPM_NR_IRQS           512
 #define NR_IRQS               (HPM_IRQ_PERI_START + HPM_NR_IRQS)
+#define HPM_IRQn_HDMA         (HPM_IRQ_PERI_START + IRQn_HDMA        )
+#define HPM_IRQn_XDMA         (HPM_IRQ_PERI_START + IRQn_XDMA        )
 #endif
 
 #endif /* __ARCH_RISCV_INCLUDE_HPMICRO_IRQ_H */
