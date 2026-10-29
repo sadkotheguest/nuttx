@@ -120,17 +120,17 @@ void board_print_clock_freq(void)
     printf("==============================\n");
     printf(" %s clock summary\n", BOARD_NAME);
     printf("==============================\n");
-    printf("cpu0:\t\t %dHz\n", clock_get_frequency(clock_cpu0));
-    printf("cpu1:\t\t %dHz\n", clock_get_frequency(clock_cpu1));
+    printf("cpu0:\t\t %luHz\n", clock_get_frequency(clock_cpu0));
+    printf("cpu1:\t\t %luHz\n", clock_get_frequency(clock_cpu1));
     printf("ahb:\t\t %luHz\n", clock_get_frequency(clock_ahb0));
-    printf("axif:\t\t %dHz\n", clock_get_frequency(clock_axif));
-    printf("axis:\t\t %dHz\n", clock_get_frequency(clock_axis));
-    printf("axic:\t\t %dHz\n", clock_get_frequency(clock_axic));
-    printf("axin:\t\t %dHz\n", clock_get_frequency(clock_axin));
-    printf("xpi0:\t\t %dHz\n", clock_get_frequency(clock_xpi0));
+    printf("axif:\t\t %luHz\n", clock_get_frequency(clock_axif));
+    printf("axis:\t\t %luHz\n", clock_get_frequency(clock_axis));
+    printf("axic:\t\t %luHz\n", clock_get_frequency(clock_axic));
+    printf("axin:\t\t %luHz\n", clock_get_frequency(clock_axin));
+    printf("xpi0:\t\t %luHz\n", clock_get_frequency(clock_xpi0));
     printf("femc:\t\t %luHz\n", clock_get_frequency(clock_femc));
-    printf("mchtmr0:\t %dHz\n", clock_get_frequency(clock_mchtmr0));
-    printf("mchtmr1:\t %dHz\n", clock_get_frequency(clock_mchtmr1));
+    printf("mchtmr0:\t %luHz\n", clock_get_frequency(clock_mchtmr0));
+    printf("mchtmr1:\t %luHz\n", clock_get_frequency(clock_mchtmr1));
     printf("==============================\n");
 }
 

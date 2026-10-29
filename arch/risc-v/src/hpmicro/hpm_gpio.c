@@ -188,10 +188,10 @@ static struct gpio_callback_s *g_gpioc_callbacks[32] = {NULL};
 #ifdef IRQn_GPIO0_D
 static struct gpio_callback_s *g_gpiod_callbacks[32] = {NULL};
 #endif
-#ifdef IRQn_GPIO0_E
+#ifdef HPM_IRQn_GPIO0_E
 static struct gpio_callback_s *g_gpioe_callbacks[32] = {NULL};
 #endif
-#ifdef IRQn_GPIO0_F
+#ifdef HPM_IRQn_GPIO0_F
 static struct gpio_callback_s *g_gpiof_callbacks[32] = {NULL};
 #endif
 #ifdef IRQn_GPIO0_X
@@ -216,10 +216,10 @@ static struct gpio_callback_s g_gpioc_callbacks[32] = {0};
 #ifdef IRQn_GPIO0_D
 static struct gpio_callback_s g_gpiod_callbacks[32] = {0};
 #endif
-#ifdef IRQn_GPIO0_E
+#ifdef HPM_IRQn_GPIO0_E
 static struct gpio_callback_s g_gpioe_callbacks[32] = {0};
 #endif
-#ifdef IRQn_GPIO0_F
+#ifdef HPM_IRQn_GPIO0_F
 static struct gpio_callback_s g_gpiof_callbacks[32] = {0};
 #endif
 #ifdef IRQn_GPIO0_X

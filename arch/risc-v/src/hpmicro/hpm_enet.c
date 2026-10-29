@@ -799,7 +799,7 @@ static void hpm_freesegment(struct hpm_enet_mac_s *priv)
     /* Release buffers to DMA */
     for (int i = 0; i < rx_frame_info->seg_count; i++) {
         rx_desc->rdes0_bm.own = 1;
-        rx_desc = rx_desc->rdes3_bm.next_desc;
+        rx_desc = (enet_rx_desc_t *)(uintptr_t)rx_desc->rdes3_bm.next_desc;
     }
 
     rx_frame_info->seg_count = 0;
@@ -841,10 +841,10 @@ static int hpm_recvframe(struct hpm_enet_mac_s *priv)
    
         if (priv->dev.d_len > ENET_RX_BUFF_SIZE || priv->desc.rx_frame_info.seg_count > 1) 
         {
-            printf("ERROR: Dropped, RX descriptor Too big: %d in %d segments\n", priv->dev.d_len, priv->desc.rx_frame_info.seg_count);            
+            printf("ERROR: Dropped, RX descriptor Too big: %d in %lu segments\n", priv->dev.d_len, priv->desc.rx_frame_info.seg_count);            
             hpm_freesegment(priv);
         } else if (priv->desc.rx_frame_info.ls_rx_desc->rdes0_bm.es) {
-            printf("ERROR: Dropped, RX descriptor errors: %08x\n", priv->desc.rx_frame_info.fs_rx_desc);
+            printf("ERROR: Dropped, RX descriptor errors: %08x\n", (unsigned)(uintptr_t)priv->desc.rx_frame_info.fs_rx_desc);
             hpm_freesegment(priv);
         }
         else {
