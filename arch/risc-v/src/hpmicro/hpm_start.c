@@ -32,6 +32,7 @@
 #include "hpm.h"
 #include "chip.h"
 #include "board.h"
+#include "hpm_sdram.h"
 
 /****************************************************************************
  * Public Data
@@ -64,6 +65,15 @@ uintptr_t g_idle_topstack = (uintptr_t)_stack;
 
 void __hpm_start(void)
 {
+  /* External SDRAM first.  The FEMC window is dead until the controller is
+   * programmed and a single access to it before that hangs the AXI bus, so
+   * this has to happen before anything else - the vendor startup calls
+   * _init_ext_ram() from start.S, ahead of the cache and the C runtime.
+   * Nothing here prints: the console is not up yet.
+   */
+
+  hpm_sdram_preinit();
+
   /* Setup Clock */
 
   board_init_clock();

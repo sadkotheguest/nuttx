@@ -110,6 +110,10 @@ ifeq ($(CONFIG_HPM_ENET_DRV),y)
   CHIP_CSRCS += hpmicro$(DELIM)hpm_enet.c
 endif
 
+# External SDRAM: programmed from the boot path before anything can touch the
+# FEMC window, on boards that have the expansion board fitted.
+CHIP_CSRCS += hpmicro$(DELIM)hpm_sdram.c
+
 ifeq ($(CONFIG_HPM_MBX),y)
   CHIP_CSRCS += hpmicro$(DELIM)hpm_mbx.c
 endif
