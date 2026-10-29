@@ -556,6 +556,25 @@ void board_init_pmp(void)
         index++;
     }
 
+    /* Init the external SDRAM window used for DMA buffers.  The window comes
+     * from the board linker script (region SDRAM_NC) and, like the two
+     * regions above, has to be power-of-two sized and aligned for NAPOT.
+     */
+    extern uint32_t __sdram_nc_start__[] __attribute__((weak));
+    extern uint32_t __sdram_nc_end__[] __attribute__((weak));
+    start_addr = (uint32_t)__sdram_nc_start__;
+    end_addr = (uint32_t)__sdram_nc_end__;
+    length = end_addr - start_addr;
+    if (length > 0) {
+        assert((length & (length - 1U)) == 0U);
+        assert((start_addr & (length - 1U)) == 0U);
+        pmp_entry[index].pmp_addr = PMP_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pmp_cfg.val = PMP_CFG(READ_EN, WRITE_EN, EXECUTE_EN, ADDR_MATCH_NAPOT, REG_UNLOCK);
+        pmp_entry[index].pma_addr = PMA_NAPOT_ADDR(start_addr, length);
+        pmp_entry[index].pma_cfg.val = PMA_CFG(ADDR_MATCH_NAPOT, MEM_TYPE_MEM_NON_CACHE_BUF, AMO_EN);
+        index++;
+    }
+
     pmp_config(&pmp_entry[0], index);
 }
 

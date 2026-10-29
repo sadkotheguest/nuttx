@@ -133,10 +133,18 @@ __RW enet_rx_desc_t dma_rx_desc_tab[ENET_RX_BUFF_COUNT] ; /* Ethernet Rx DMA Des
 ATTR_PLACE_AT_NONCACHEABLE_WITH_ALIGNMENT(ENET_SOC_DESC_ADDR_ALIGNMENT)
 __RW enet_tx_desc_t dma_tx_desc_tab[ENET_TX_BUFF_COUNT] ; /* Ethernet Tx DMA Descriptor */
 
-ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram", ENET_SOC_BUFF_ADDR_ALIGNMENT)
+/* The frame buffers live in the external SDRAM window that the board linker
+ * script marks non-cacheable (region SDRAM_NC, PMP/PMA entry from
+ * board_init_pmp).  They were in .fast_ram before, i.e. in cached DLM, with no
+ * cache maintenance anywhere in this driver - 122 KB of the 256 KB DLM for
+ * buffers the DMA engine touches directly.  The descriptors stay in the
+ * on-chip non-cacheable RAM.
+ */
+
+ATTR_PLACE_AT_WITH_ALIGNMENT(".sdram_nc", ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW uint8_t rx_buff[ENET_RX_BUFF_COUNT][ENET_RX_BUFF_SIZE]; /* Ethernet Receive Buffer */
 
-ATTR_PLACE_AT_WITH_ALIGNMENT(".fast_ram", ENET_SOC_BUFF_ADDR_ALIGNMENT)
+ATTR_PLACE_AT_WITH_ALIGNMENT(".sdram_nc", ENET_SOC_BUFF_ADDR_ALIGNMENT)
 __RW uint8_t tx_buff[ENET_TX_BUFF_COUNT][ENET_TX_BUFF_SIZE]; /* Ethernet Transmit Buffer */
 
 /****************************************************************************
