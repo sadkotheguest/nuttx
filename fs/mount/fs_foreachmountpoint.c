@@ -89,14 +89,14 @@ static int mountpoint_filter(FAR struct inode *node,
 
       /* Make sure that this would not exceed the maximum path length */
 
-      if (pathlen + namlen > PATH_MAX)
+      if (pathlen + namlen >= PATH_MAX)
         {
           return OK;
         }
 
       /* Append the inode name to the directory path */
 
-      sprintf(&dirpath[pathlen], "/%s", node->i_name);
+      snprintf(&dirpath[pathlen], PATH_MAX - pathlen, "/%s", node->i_name);
 
       /* Get the status of the file system */
 
