@@ -10,90 +10,228 @@
 #define HPM_CSR_H
 
 /* STANDARD CRS address definition */
+#ifndef CSR_USTATUS
 #define CSR_USTATUS (0x0)
+#endif
+#ifndef CSR_UIE
 #define CSR_UIE (0x4)
+#endif
+#ifndef CSR_UTVEC
 #define CSR_UTVEC (0x5)
+#endif
+#ifndef CSR_USCRATCH
 #define CSR_USCRATCH (0x40)
+#endif
+#ifndef CSR_UEPC
 #define CSR_UEPC (0x41)
+#endif
+#ifndef CSR_UCAUSE
 #define CSR_UCAUSE (0x42)
+#endif
+#ifndef CSR_UTVAL
 #define CSR_UTVAL (0x43)
+#endif
+#ifndef CSR_UIP
 #define CSR_UIP (0x44)
+#endif
+#ifndef CSR_SSTATUS
 #define CSR_SSTATUS (0x100)
+#endif
+#ifndef CSR_SEDELEG
 #define CSR_SEDELEG (0x102)
+#endif
+#ifndef CSR_SIDELEG
 #define CSR_SIDELEG (0x103)
+#endif
+#ifndef CSR_SIE
 #define CSR_SIE (0x104)
+#endif
+#ifndef CSR_STVEC
 #define CSR_STVEC (0x105)
+#endif
+#ifndef CSR_SSCRATCH
 #define CSR_SSCRATCH (0x140)
+#endif
+#ifndef CSR_SEPC
 #define CSR_SEPC (0x141)
+#endif
+#ifndef CSR_SCAUSE
 #define CSR_SCAUSE (0x142)
+#endif
+#ifndef CSR_STVAL
 #define CSR_STVAL (0x143)
+#endif
+#ifndef CSR_SIP
 #define CSR_SIP (0x144)
+#endif
+#ifndef CSR_SATP
 #define CSR_SATP (0x180)
+#endif
+#ifndef CSR_MSTATUS
 #define CSR_MSTATUS (0x300)
+#endif
+#ifndef CSR_MISA
 #define CSR_MISA (0x301)
+#endif
+#ifndef CSR_MEDELEG
 #define CSR_MEDELEG (0x302)
+#endif
+#ifndef CSR_MIDELEG
 #define CSR_MIDELEG (0x303)
+#endif
+#ifndef CSR_MIE
 #define CSR_MIE (0x304)
+#endif
+#ifndef CSR_MTVEC
 #define CSR_MTVEC (0x305)
+#endif
+#ifndef CSR_MCOUNTEREN
 #define CSR_MCOUNTEREN (0x306)
+#endif
 #define CSR_MHPMEVENT3 (0x323)
 #define CSR_MHPMEVENT4 (0x324)
 #define CSR_MHPMEVENT5 (0x325)
 #define CSR_MHPMEVENT6 (0x326)
+#ifndef CSR_MSCRATCH
 #define CSR_MSCRATCH (0x340)
+#endif
+#ifndef CSR_MEPC
 #define CSR_MEPC (0x341)
+#endif
+#ifndef CSR_MCAUSE
 #define CSR_MCAUSE (0x342)
+#endif
+#ifndef CSR_MTVAL
 #define CSR_MTVAL (0x343)
+#endif
+#ifndef CSR_MIP
 #define CSR_MIP (0x344)
+#endif
+#ifndef CSR_PMPCFG0
 #define CSR_PMPCFG0 (0x3A0)
+#endif
+#ifndef CSR_PMPCFG1
 #define CSR_PMPCFG1 (0x3A1)
+#endif
+#ifndef CSR_PMPCFG2
 #define CSR_PMPCFG2 (0x3A2)
+#endif
+#ifndef CSR_PMPCFG3
 #define CSR_PMPCFG3 (0x3A3)
+#endif
+#ifndef CSR_PMPADDR0
 #define CSR_PMPADDR0 (0x3B0)
+#endif
+#ifndef CSR_PMPADDR1
 #define CSR_PMPADDR1 (0x3B1)
+#endif
+#ifndef CSR_PMPADDR2
 #define CSR_PMPADDR2 (0x3B2)
+#endif
+#ifndef CSR_PMPADDR3
 #define CSR_PMPADDR3 (0x3B3)
+#endif
+#ifndef CSR_PMPADDR4
 #define CSR_PMPADDR4 (0x3B4)
+#endif
+#ifndef CSR_PMPADDR5
 #define CSR_PMPADDR5 (0x3B5)
+#endif
+#ifndef CSR_PMPADDR6
 #define CSR_PMPADDR6 (0x3B6)
+#endif
+#ifndef CSR_PMPADDR7
 #define CSR_PMPADDR7 (0x3B7)
+#endif
+#ifndef CSR_PMPADDR8
 #define CSR_PMPADDR8 (0x3B8)
+#endif
+#ifndef CSR_PMPADDR9
 #define CSR_PMPADDR9 (0x3B9)
+#endif
+#ifndef CSR_PMPADDR10
 #define CSR_PMPADDR10 (0x3BA)
+#endif
+#ifndef CSR_PMPADDR11
 #define CSR_PMPADDR11 (0x3BB)
+#endif
+#ifndef CSR_PMPADDR12
 #define CSR_PMPADDR12 (0x3BC)
+#endif
+#ifndef CSR_PMPADDR13
 #define CSR_PMPADDR13 (0x3BD)
+#endif
+#ifndef CSR_PMPADDR14
 #define CSR_PMPADDR14 (0x3BE)
+#endif
+#ifndef CSR_PMPADDR15
 #define CSR_PMPADDR15 (0x3BF)
+#endif
+#ifndef CSR_TSELECT
 #define CSR_TSELECT (0x7A0)
+#endif
+#ifndef CSR_TDATA1
 #define CSR_TDATA1 (0x7A1)
+#endif
 #define CSR_MCONTROL (0x7A1)
 #define CSR_ICOUNT (0x7A1)
 #define CSR_ITRIGGER (0x7A1)
 #define CSR_ETRIGGER (0x7A1)
+#ifndef CSR_TDATA2
 #define CSR_TDATA2 (0x7A2)
+#endif
+#ifndef CSR_TDATA3
 #define CSR_TDATA3 (0x7A3)
+#endif
 #define CSR_TEXTRA (0x7A3)
 #define CSR_TINFO (0x7A4)
 #define CSR_TCONTROL (0x7A5)
 #define CSR_MCONTEXT (0x7A8)
 #define CSR_SCONTEXT (0x7AA)
+#ifndef CSR_DCSR
 #define CSR_DCSR (0x7B0)
+#endif
+#ifndef CSR_DPC
 #define CSR_DPC (0x7B1)
+#endif
 #define CSR_DSCRATCH0 (0x7B2)
 #define CSR_DSCRATCH1 (0x7B3)
+#ifndef CSR_MCYCLE
 #define CSR_MCYCLE (0xB00)
+#endif
+#ifndef CSR_MINSTRET
 #define CSR_MINSTRET (0xB02)
+#endif
+#ifndef CSR_MHPMCOUNTER3
 #define CSR_MHPMCOUNTER3 (0xB03)
+#endif
+#ifndef CSR_MHPMCOUNTER4
 #define CSR_MHPMCOUNTER4 (0xB04)
+#endif
+#ifndef CSR_MHPMCOUNTER5
 #define CSR_MHPMCOUNTER5 (0xB05)
+#endif
+#ifndef CSR_MHPMCOUNTER6
 #define CSR_MHPMCOUNTER6 (0xB06)
+#endif
+#ifndef CSR_MCYCLEH
 #define CSR_MCYCLEH (0xB80)
+#endif
+#ifndef CSR_MINSTRETH
 #define CSR_MINSTRETH (0xB82)
+#endif
+#ifndef CSR_MHPMCOUNTER3H
 #define CSR_MHPMCOUNTER3H (0xB83)
+#endif
+#ifndef CSR_MHPMCOUNTER4H
 #define CSR_MHPMCOUNTER4H (0xB84)
+#endif
+#ifndef CSR_MHPMCOUNTER5H
 #define CSR_MHPMCOUNTER5H (0xB85)
+#endif
+#ifndef CSR_MHPMCOUNTER6H
 #define CSR_MHPMCOUNTER6H (0xB86)
+#endif
 #define CSR_PMACFG0 (0xBC0)
 #define CSR_PMACFG1 (0xBC1)
 #define CSR_PMACFG2 (0xBC2)
@@ -114,15 +252,29 @@
 #define CSR_PMAADDR13 (0xBDD)
 #define CSR_PMAADDR14 (0xBDE)
 #define CSR_PMAADDR15 (0xBDF)
+#ifndef CSR_CYCLE
 #define CSR_CYCLE (0xC00)
+#endif
+#ifndef CSR_CYCLEH
 #define CSR_CYCLEH (0xC80)
+#endif
+#ifndef CSR_MVENDORID
 #define CSR_MVENDORID (0xF11)
+#endif
+#ifndef CSR_MARCHID
 #define CSR_MARCHID (0xF12)
+#endif
+#ifndef CSR_MIMPID
 #define CSR_MIMPID (0xF13)
+#endif
+#ifndef CSR_MHARTID
 #define CSR_MHARTID (0xF14)
+#endif
 
 /* NON-STANDARD CRS address definition */
+#ifndef CSR_SCOUNTEREN
 #define CSR_SCOUNTEREN (0x106)
+#endif
 #define CSR_MCOUNTINHIBIT (0x320)
 #define CSR_MILMB (0x7C0)
 #define CSR_MDLMB (0x7C1)
